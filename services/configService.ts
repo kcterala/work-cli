@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { CONFIG_DIR, CONFIG_PATH } from "./constants";
-import type { SectionInfo } from "./resources/todoist";
+import { CONFIG_DIR, CONFIG_PATH } from "../constants";
+import type { SectionInfo } from "../clients/todoist";
 
 export interface UserConfig {
     todoistToken?: string,

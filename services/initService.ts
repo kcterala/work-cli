@@ -1,14 +1,14 @@
 import chalk from "chalk";
-import { getProjects, getSections, type ProjectInfo, type SectionInfo } from "./resources/todoist";
+import { getProjects, getSections, type ProjectInfo, type SectionInfo } from "../clients/todoist";
 import inquirer from "inquirer";
-import { readConfig, updateConfigValue, type UserConfig } from "./config-manager";
+import { readConfig, updateConfigValue, type UserConfig } from "./configService";
 
 export const initialize = async (): Promise<UserConfig> => {
 
     const todoistToken = await getTodoistTokenFromUser();
     const defaultProjectId = await getDefaultProjectIdFromUser(todoistToken);
     const llmToken = await getLLMTokenFromUser();
-    const defaultSectionId = await getDefaultSectionIdFromUser(todoistToken);
+    const defaultSectionId = await getDefaultSectionIdFromUser(todoistToken, defaultProjectId);
 
     return { todoistToken, defaultProjectId, llmToken, defaultSectionId }
 }
@@ -68,34 +68,30 @@ const getDefaultProjectIdFromUser = async (todoistToken: string): Promise<string
     }
 }
 
-const getDefaultSectionIdFromUser = async (todoistToken: string): Promise<string> => {
-    try {
-        const config = readConfig();
-        if (config.defaultSectionId) {
-            return config.defaultSectionId;
-        }
+const getDefaultSectionIdFromUser = async (todoistToken: string, projectId: string): Promise<string> => {
 
-        const sections: SectionInfo[] = await getSections(todoistToken);
-        console.log(chalk.green(`Found ${sections.length} Projects`))
-        const { sectionId } = await inquirer.prompt([
-            {
-                type: "list",
-                name: "sectionId",
-                message: "Select a default section of the project to add a task:",
-                choices: sections.map(section => ({
-                    name: section.name,
-                    value: section.id,
-                }))
-            }
-        ]);
-
-        updateConfigValue("defaultSectionId", sectionId);
-        updateConfigValue("sections", sections)
-        return sectionId;
-    } catch (error) {
-        console.error(chalk.red("Error fetching projects:"), error);
-        process.exit(1)
+    const config = readConfig();
+    if (config.defaultSectionId) {
+        return config.defaultSectionId;
     }
+
+    const sections: SectionInfo[] = await getSections(todoistToken, projectId);
+    console.log(chalk.green(`Found ${sections.length} Sections`))
+    const { sectionId } = await inquirer.prompt([
+        {
+            type: "list",
+            name: "sectionId",
+            message: "Select a default section of the project to add a task:",
+            choices: sections.map(section => ({
+                name: section.name,
+                value: section.id,
+            }))
+        }
+    ]);
+
+    updateConfigValue("defaultSectionId", sectionId);
+    updateConfigValue("sections", sections)
+    return sectionId;
 }
 
 const getLLMTokenFromUser = async (): Promise<string> => {
@@ -117,7 +113,7 @@ const getLLMTokenFromUser = async (): Promise<string> => {
     if (trimmedToken) {
         updateConfigValue('llmToken', trimmedToken);
     } else {
-        updateConfigValue('llmToken', "dont-ask");
+        updateConfigValue('llmToken', "not-provided");
     }
 
     return trimmedToken;
