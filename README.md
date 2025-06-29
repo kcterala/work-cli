@@ -5,7 +5,7 @@ CLI for work related todoist tasks. Useful if you are gonna stay in terminal.
 ## Features 
 
 1. Add adhoc tasks directly from CLI.
-2. View / Move tasks as soon as the task gets completed.
+2. Quick View tasks.
 3. Get AI summarized content for standup based on the tasks completion.
 
 ## Setup

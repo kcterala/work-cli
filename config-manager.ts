@@ -1,10 +1,13 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { CONFIG_DIR, CONFIG_PATH } from "./constants";
+import type { SectionInfo } from "./resources/todoist";
 
 export interface UserConfig {
     todoistToken?: string,
     defaultProjectId?: string,
-    llmToken?: string
+    defaultSectionId?: string,
+    llmToken?: string,
+    sections?: SectionInfo[]
 }
 
 export const createConfigFileIfRequired = (): void => {
