@@ -1,20 +1,14 @@
 import chalk from "chalk";
-import { getProjects, getSections, type ProjectInfo, type SectionInfo } from "./resources/todoist";
+import { getProjects, getSections, type ProjectInfo, type SectionInfo } from "../clients/todoist";
 import inquirer from "inquirer";
-import { readConfig, updateConfigValue, type UserConfig } from "./config-manager";
+import { readConfig, updateConfigValue, type UserConfig } from "./configService";
 
 export const initialize = async (): Promise<UserConfig> => {
 
     const todoistToken = await getTodoistTokenFromUser();
     const defaultProjectId = await getDefaultProjectIdFromUser(todoistToken);
     const llmToken = await getLLMTokenFromUser();
-    let defaultSectionId;
-    try {
-        defaultSectionId = await getDefaultSectionIdFromUser(todoistToken);
-    } catch (error) {
-        console.log(chalk.gray("No sections found in this project. Skipping default section"))
-    }
-
+    const defaultSectionId = await getDefaultSectionIdFromUser(todoistToken, defaultProjectId);
 
     return { todoistToken, defaultProjectId, llmToken, defaultSectionId }
 }
@@ -74,16 +68,15 @@ const getDefaultProjectIdFromUser = async (todoistToken: string): Promise<string
     }
 }
 
-const getDefaultSectionIdFromUser = async (todoistToken: string): Promise<string> => {
+const getDefaultSectionIdFromUser = async (todoistToken: string, projectId: string): Promise<string> => {
 
     const config = readConfig();
     if (config.defaultSectionId) {
         return config.defaultSectionId;
     }
 
-    const sections: SectionInfo[] = await getSections(todoistToken, config.defaultProjectId!);
-
-    console.log(chalk.green(`Found ${sections.length} sections in the project.`))
+    const sections: SectionInfo[] = await getSections(todoistToken, projectId);
+    console.log(chalk.green(`Found ${sections.length} Sections`))
     const { sectionId } = await inquirer.prompt([
         {
             type: "list",
@@ -99,7 +92,6 @@ const getDefaultSectionIdFromUser = async (todoistToken: string): Promise<string
     updateConfigValue("defaultSectionId", sectionId);
     updateConfigValue("sections", sections)
     return sectionId;
-
 }
 
 const getLLMTokenFromUser = async (): Promise<string> => {
@@ -121,7 +113,7 @@ const getLLMTokenFromUser = async (): Promise<string> => {
     if (trimmedToken) {
         updateConfigValue('llmToken', trimmedToken);
     } else {
-        updateConfigValue('llmToken', "dont-ask");
+        updateConfigValue('llmToken', "not-provided");
     }
 
     return trimmedToken;

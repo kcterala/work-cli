@@ -1,6 +1,6 @@
 import { fetch } from "bun"
 import chalk from "chalk";
-import { readConfig, type UserConfig } from "../config-manager";
+import { readConfig, type UserConfig } from "../services/configService";
 
 const TODOIST_BASE_URL = "https://api.todoist.com/api/v1"
 
@@ -48,9 +48,14 @@ export const getProjects = async (todoistToken: string): Promise<ProjectInfo[]> 
 
     if (!response.ok) {
         console.error(chalk.red("Could not fetch data from Todoist"));
+        throw new Error(`Failed to fetch projects: ${response.status} ${response.statusText}`);
     }
-
-    const data = await response.json() as ProjectResponse;
+    let data: ProjectResponse;
+    try {
+        data = await response.json() as ProjectResponse;
+    } catch (error) {
+        throw new Error(`Failed to parse response: ${error}`);
+    }
     return data.results
 }
 
@@ -65,10 +70,16 @@ export const getSections = async (todoistToken: string, projectId: string): Prom
 
     if (!response.ok) {
         console.error(chalk.red("Could not fetch data from Todoist"));
+        throw new Error(`Failed to fetch sections: ${response.status} ${response.statusText}`);
     }
-
-    const data = await response.json() as SectionResponse;
+    let data: SectionResponse;
+    try {
+        data = await response.json() as SectionResponse;
+    } catch (error) {
+        throw new Error(`Failed to parse response: ${error}`);
+    }
     return data.results
+
 }
 
 export const addTaskToProject = async (
@@ -108,7 +119,6 @@ export const addTaskToProject = async (
 
 export const getTasksInProject = async (
     project_id: string,
-    section_id: string,
 ): Promise<TaskInfo[]> => {
     const config: UserConfig = readConfig();
     const response = await fetch(`${TODOIST_BASE_URL}/tasks?project_id=${project_id}`, {
@@ -120,9 +130,16 @@ export const getTasksInProject = async (
 
     if (!response.ok) {
         console.error(chalk.red("Could not fetch data from Todoist"));
+        throw new Error(`Failed to fetch tasks: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json() as ViewTaskResponse;
+    let data: ViewTaskResponse;
+    try {
+        data = await response.json() as ViewTaskResponse;
+    } catch (error) {
+        throw new Error(`Failed to parse response: ${error}`);
+    }
     return data.results
+
 }
 

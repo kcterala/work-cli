@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import inquirer from "inquirer"
-import { addTaskToProject, getTasksInProject, type TaskInfo } from "./todoist";
-import { readConfig, type UserConfig } from "../config-manager";
+import { addTaskToProject, getTasksInProject, type TaskInfo } from "../clients/todoist";
+import { readConfig, type UserConfig } from "./configService";
 import CliTable3 from "cli-table3";
 
 export const addTaskToTodoistProject = async () => {
@@ -27,14 +27,13 @@ export const addTaskToTodoistProject = async () => {
         }
     ])).description as string;
 
-    console.log(title, description)
     const config: UserConfig = readConfig();
     addTaskToProject(title, description, 4, config.defaultProjectId!, config.defaultSectionId!);
 }
 
 export const viewTasksInTodoistProject = async () => {
     const config: UserConfig = readConfig();
-    const tasks: TaskInfo[] = await getTasksInProject(config.defaultProjectId!, config.defaultSectionId!);
+    const tasks: TaskInfo[] = await getTasksInProject(config.defaultProjectId!);
 
     // Check if sections exist and are available
     if (!config.sections || config.sections.length === 0) {
