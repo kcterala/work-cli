@@ -28,16 +28,32 @@ cd "$TMP_DIR"
 curl -sL "$URL" | tar -xz
 chmod +x "${BINARY_NAME}-${PLATFORM}"
 
-# Install to user directory (no sudo needed)
-INSTALL_DIR="${HOME}/.local/bin"
-mkdir -p "$INSTALL_DIR"
+# Try different install directories in order of preference
+INSTALL_DIRS=("$HOME/.local/bin" "$HOME/bin" "$HOME/.bin" "$HOME/tools")
+
+INSTALL_DIR=""
+for dir in "${INSTALL_DIRS[@]}"; do
+    if mkdir -p "$dir" 2>/dev/null && [[ -w "$dir" ]]; then
+        INSTALL_DIR="$dir"
+        break
+    fi
+done
+
+if [[ -z "$INSTALL_DIR" ]]; then
+    echo "Cannot find writable directory. Trying current directory..."
+    INSTALL_DIR="$(pwd)"
+fi
+
+echo "Installing to: $INSTALL_DIR"
 mv "${BINARY_NAME}-${PLATFORM}" "$INSTALL_DIR/$BINARY_NAME"
 
-# Add to PATH if not already there
-if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+# Add to PATH if not current directory and not already in PATH
+if [[ "$INSTALL_DIR" != "$(pwd)" && ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
     echo "Adding $INSTALL_DIR to PATH..."
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+    echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> ~/.zshrc
     echo "⚠️  Restart your terminal or run: source ~/.zshrc"
+else
+    echo "Run with: $INSTALL_DIR/$BINARY_NAME"
 fi
 
 rm -rf "$TMP_DIR"

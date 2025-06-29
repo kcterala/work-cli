@@ -10,9 +10,11 @@ CLI for work related todoist tasks. Useful if you are gonna stay in terminal.
 
 ## Setup
 
-1. Run `bun run index.ts`.
-2. Give Todoist token.
-3. Give LLM token.
+```
+curl -fsSL https://raw.githubusercontent.com/kcterala/work-cli/main/install.sh | bash
+```
+
+## Development
 
 
 To install dependencies:
