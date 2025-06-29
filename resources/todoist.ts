@@ -54,9 +54,9 @@ export const getProjects = async (todoistToken: string): Promise<ProjectInfo[]> 
     return data.results
 }
 
-export const getSections = async (todoistToken: string): Promise<SectionInfo[]> => {
-    console.log(chalk.cyan("Fetch projects info from todoist...\n"))
-    const response = await fetch(`${TODOIST_BASE_URL}/sections`, {
+export const getSections = async (todoistToken: string, projectId: string): Promise<SectionInfo[]> => {
+    console.log(chalk.cyan("Fetch sections info from todoist...\n"))
+    const response = await fetch(`${TODOIST_BASE_URL}/sections?project_id=${projectId}`, {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${todoistToken}`
@@ -83,9 +83,9 @@ export const addTaskToProject = async (
     const request = {
         content: title,
         description: description,
-        project_id: config.defaultProjectId,
+        project_id: projectId,
         priority: priority,
-        section_id: config.defaultSectionId
+        section_id: sectionId
     }
 
     const response = await fetch(`${TODOIST_BASE_URL}/tasks`, {
