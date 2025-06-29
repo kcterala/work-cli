@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 
 import { Command } from "commander";
-import { initialize } from "./init";
-import { addTaskToTodoistProject, viewTasksInTodoistProject } from "./resources/service";
-import type { UserConfig } from "./config-manager";
+import { initialize } from "../init";
+import { addTaskToTodoistProject, viewTasksInTodoistProject } from "../resources/service";
+import type { UserConfig } from "../config-manager";
 
 const userConfig: UserConfig = await initialize();
 

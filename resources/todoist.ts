@@ -88,7 +88,6 @@ export const addTaskToProject = async (
         section_id: config.defaultSectionId
     }
 
-    console.log(JSON.stringify(request))
     const response = await fetch(`${TODOIST_BASE_URL}/tasks`, {
         method: "POST",
         body: JSON.stringify(request),
