@@ -33,6 +33,17 @@ program
         await getIpAddress();
     })
 
+program
+    .command("update")
+    .description("Update the CLI to the latest version")
+    .action(async () => {
+        const { $ } = await import("bun");
+        const scriptUrl = "https://raw.githubusercontent.com/kcterala/work-cli/main/install.sh";
+
+        console.log("Updating to the latest version...");
+        await $`curl -fsSL ${scriptUrl} | bash`;
+    });
+
 
 program.parse()
 
