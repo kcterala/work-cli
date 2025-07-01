@@ -3,6 +3,7 @@ import inquirer from "inquirer"
 import { addTaskToProject, getTasksInProject, type TaskInfo } from "../clients/todoist";
 import { readConfig, type UserConfig } from "./configService";
 import CliTable3 from "cli-table3";
+import { randomUUIDv7 } from "bun";
 
 export const addTaskToTodoistProject = async () => {
     const title: string = (await inquirer.prompt([
@@ -86,4 +87,15 @@ export const viewTasksInTodoistProject = async () => {
 
     console.log(table.toString());
 
+}
+
+export const createStandupSummary = async () => {
+    /*
+        1. Get the tasks that are in Done status or last section_order.
+        2. Get the tasks that are in completed activity.
+        3. Get the tasks priority tasks in the middle sections (TODO or IN Progress generally)
+        
+        4. Get all these with labels and feed it to the AI and get the output.
+    */
+    console.log("Coming soon...")
 }
