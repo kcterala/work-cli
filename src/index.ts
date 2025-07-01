@@ -4,6 +4,7 @@ import { Command } from "commander";
 import { initialize } from "../services/initService";
 import { addTaskToTodoistProject, createStandupSummary, viewTasksInTodoistProject } from "../services/todoistService";
 import type { UserConfig } from "../services/configService";
+import { getIpAddress } from "../services/utilityService";
 
 const userConfig: UserConfig = await initialize();
 
@@ -25,6 +26,13 @@ program
     .action(async () => {
         await createStandupSummary();
     })
+
+program
+    .command("ip")
+    .action(async () => {
+        await getIpAddress();
+    })
+
 
 program.parse()
 
