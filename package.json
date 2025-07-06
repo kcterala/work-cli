@@ -5,7 +5,7 @@
   "description": "CLI tool for Todoist project management",
   "type": "module",
   "bin": {
-    "work": "dist/index.ts"
+    "work": "src/index.ts"
   },
   "scripts": {
     "build:mac": "bun build src/index.ts --compile --target=bun-darwin-arm64 --outfile dist/work-macos",

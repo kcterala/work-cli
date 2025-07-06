@@ -3,6 +3,7 @@ import chalk from "chalk";
 import { readConfig, type UserConfig } from "../services/configService";
 
 const TODOIST_BASE_URL = "https://api.todoist.com/api/v1"
+const TODOIST_SYNC_URL = "https://api.todoist.com/sync/v9"
 
 export interface ProjectInfo {
     id: string,
@@ -30,10 +31,31 @@ export interface TaskInfo {
     checked: string,
     content: string,
     description: string,
+    labels?: string[],
 }
 
 export interface ViewTaskResponse {
     results: TaskInfo[]
+}
+
+export interface ActivityItem {
+    id: string;
+    object_id: string;
+    object_type: string;
+    event_type: string;
+    event_date: string;
+    parent_project_id: string;
+    parent_item_id?: string;
+    extra_data?: {
+        content?: string;
+        description?: string;
+        labels?: string[];
+    };
+}
+
+export interface ActivityResponse {
+    count: number;
+    events: ActivityItem[];
 }
 
 
@@ -121,6 +143,7 @@ export const getTasksInProject = async (
     project_id: string,
 ): Promise<TaskInfo[]> => {
     const config: UserConfig = readConfig();
+    // Add labels parameter to get labels for each task
     const response = await fetch(`${TODOIST_BASE_URL}/tasks?project_id=${project_id}`, {
         method: "GET",
         headers: {
@@ -140,6 +163,48 @@ export const getTasksInProject = async (
         throw new Error(`Failed to parse response: ${error}`);
     }
     return data.results
-
 }
 
+export const getActivityForProject = async (
+    project_id: string,
+    since?: Date
+): Promise<ActivityItem[]> => {
+    console.log(chalk.cyan("Fetching activity data from Todoist..."));
+    const config: UserConfig = readConfig();
+
+    // Calculate the date for yesterday if not provided
+    if (!since) {
+        since = new Date();
+        since.setDate(since.getDate() - 1);
+    }
+
+    // Format date as YYYY-MM-DD
+    const sinceFormatted = since.toISOString().split('T')[0];
+
+    const response = await fetch(`${TODOIST_SYNC_URL}/activity/get`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${config.todoistToken}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            parent_project_id: project_id,
+            since: sinceFormatted,
+            limit: 100
+        })
+    });
+
+    if (!response.ok) {
+        console.error(chalk.red("Could not fetch activity data from Todoist"));
+        throw new Error(`Failed to fetch activity: ${response.status} ${response.statusText}`);
+    }
+
+    let data: ActivityResponse;
+    try {
+        data = await response.json() as ActivityResponse;
+    } catch (error) {
+        throw new Error(`Failed to parse activity response: ${error}`);
+    }
+
+    return data.events;
+}
